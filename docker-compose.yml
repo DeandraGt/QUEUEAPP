@@ -1,40 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: queueapp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "${DB_HOST_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - queueapp
 
-# --------------------------------------------------------------------------
-# Dev server Vite, menggantikan Nginx yang sebelumnya melayani HTML statis.
-#
-# Vite melayani berkas sumber secara langsung dan menyuntikkan perubahan
-# ke peramban tanpa memuat ulang halaman (Hot Module Replacement/HMR),
-# sehingga tidak ada langkah build selama pengembangan.
-# --------------------------------------------------------------------------
-web:
-  # Bookworm (glibc), bukan Alpine (musl).
-  # Dependency Vite memuat binary native seperti rolldown dan lightningcss
-  # yang memiliki varian berbeda untuk glibc dan musl.
-  # package-lock.json dibuat di lingkungan glibc, sehingga image glibc
-  # menjaga kesesuaian antara container dan lockfile.
-  image: node:20-bookworm-slim
-  container_name: queueapp-web
-  restart: unless-stopped
-  working_dir: /app
+  server:
+    image: node:20-alpine
+    container_name: queueapp-server
+    working_dir: /app
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "${SERVER_PORT}:${PORT}"
+    volumes:
+      - ./server:/app
+    command: node placeholder.js
+    depends_on:
+      - mysql
+    networks:
+      - queueapp
 
-  # npm ci memasang dependency sesuai package-lock.json.
-  # Pemasangan dilewati jika dependency Vite sudah tersedia.
-  command: >
-    sh -c "[ -d node_modules/vite ] ||
-    npm ci --no-audit --no-fund;
-    npm run dev"
+  web:
+    image: node:20-bookworm-slim
+    container_name: queueapp-web
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+    ports:
+      - "${WEB_PORT}:5173"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    command: sh -c "npm install --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - server
+    networks:
+      - queueapp
 
-  ports:
-    - "${WEB_PORT}:5173"
+volumes:
+  mysql_data:
 
-  volumes:
-    - ./web:/app
-    # Volume anonim agar node_modules di container tidak tertimpa
-    # oleh folder dari host dan dependency Linux tetap terisolasi.
-    - /app/node_modules
-
-  depends_on:
-    - server
-
-  networks:
-    - queueapp
+networks:
+  queueapp:
+    driver: bridge
