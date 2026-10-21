@@ -1,97 +1,56 @@
-
 import { STATUS } from '../queue.js';
-import { formatJam } from '../format.js';
 
-/*
- * Komponen kecil untuk sel waktu, supaya pola "kosong berarti tanda pisah"
- * tidak ditulis lima kali.
- */
-function SelWaktu({ iso }) {
-    if (!iso) return <td>—</td>;
+export default function QueueTable({
+  antrean = [],
+  sibuk = false,
+  onSelesaikan,
+}) {
+  const daftarAktif = antrean.filter(
+    (item) => item.status !== STATUS.COMPLETED
+  );
 
-    return (
-        <td>
-            <time dateTime={iso}>{formatJam(iso)}</time>
-        </td>
-    );
-}
+  return (
+    <section aria-labelledby="judul-daftar-antrean">
+      <h2 id="judul-daftar-antrean">Daftar Antrean</h2>
 
-export default function QueueTable({ antrean, onSelesaikan }) {
-    return (
-        <section
-            id="daftar-antrean"
-            aria-labelledby="judul-daftar"
-        >
-            <h2 id="judul-daftar">Daftar Antrean</h2>
+      {daftarAktif.length === 0 ? (
+        <p>Belum ada antrean aktif.</p>
+      ) : (
+        <div className="tabel-antrean">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Nomor Antrean</th>
+                <th scope="col">Status</th>
+                <th scope="col">Aksi</th>
+              </tr>
+            </thead>
 
-            <div
-                className="tabel-gulir"
-                role="region"
-                aria-label="Tabel daftar antrean"
-                tabIndex={0}
-            >
-                <table>
-                    <caption>
-                        Antrean hari ini, urut dari yang terawal.
-                    </caption>
-
-                    <thead>
-                        <tr>
-                            <th scope="col">Nomor</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Dibuat</th>
-                            <th scope="col">Dipanggil</th>
-                            <th scope="col">Selesai</th>
-                            <th scope="col">Aksi</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {antrean.length === 0 ? (
-                            <tr>
-                                <td colSpan={6}>
-                                    Belum ada antrean.
-                                </td>
-                            </tr>
-                        ) : (
-                            antrean.map((baris) => (
-                                <tr key={baris.id}>
-                                    <th scope="row">
-                                        {baris.queueNumber}
-                                    </th>
-
-                                    {/*
-                                     * data-status digunakan oleh CSS Minggu 04
-                                     * untuk memberikan warna dan bentuk status.
-                                     */}
-                                    <td data-status={baris.status}>
-                                        {baris.status}
-                                    </td>
-
-                                    <SelWaktu iso={baris.createdAt} />
-                                    <SelWaktu iso={baris.calledAt} />
-                                    <SelWaktu iso={baris.completedAt} />
-
-                                    <td>
-                                        {baris.status === STATUS.CALLED ? (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    onSelesaikan(baris.id)
-                                                }
-                                            >
-                                                Selesaikan {baris.queueNumber}
-                                            </button>
-                                        ) : (
-                                            '—'
-                                        )}
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    );
+            <tbody>
+              {daftarAktif.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.queueNumber}</td>
+                  <td>
+                    {item.status === STATUS.WAITING && 'Menunggu'}
+                    {item.status === STATUS.CALLED && 'Sedang Dipanggil'}
+                  </td>
+                  <td>
+                    {item.status === STATUS.CALLED && (
+                      <button
+                        type="button"
+                        disabled={sibuk}
+                        onClick={() => onSelesaikan(item.id)}
+                      >
+                        Selesaikan
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
 }

@@ -1,29 +1,101 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
-function App() {
-  const [count, setCount] = useState(0)
+import { useEffect, useRef } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+
+import { useQueue } from './useQueue.js';
+
+import HomePage from './pages/HomePage.jsx';
+import TakeQueuePage from './pages/TakeQueuePage.jsx';
+import AdminLoginPage from './pages/AdminLoginPage.jsx';
+import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
+
+export default function App() {
+  useFokusSetelahBerpindah();
+
+  const {
+    status,
+    antrean,
+    galat,
+    nomorSaya,
+    pesan,
+    sibuk,
+    muatUlang,
+    ambilNomor,
+    panggilBerikutnya,
+    selesaikan,
+  } = useQueue();
+
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <h1>Get started</h1>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-      {/* ... section #next-steps: link Docs & sosial media ... */}
-    </>
-  )
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            status={status}
+            galat={galat}
+            antrean={antrean}
+            nomorSaya={nomorSaya}
+            onMuatUlang={muatUlang}
+          />
+        }
+      />
+
+      <Route
+        path="/queue"
+        element={
+          <TakeQueuePage
+            status={status}
+            galat={galat}
+            antrean={antrean}
+            nomorSaya={nomorSaya}
+            pesan={pesan}
+            sibuk={sibuk}
+            onAmbil={ambilNomor}
+            onMuatUlang={muatUlang}
+          />
+        }
+      />
+
+      <Route
+        path="/admin/login"
+        element={<AdminLoginPage />}
+      />
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminDashboardPage
+            status={status}
+            galat={galat}
+            antrean={antrean}
+            pesan={pesan}
+            sibuk={sibuk}
+            onPanggil={panggilBerikutnya}
+            onSelesaikan={selesaikan}
+            onMuatUlang={muatUlang}
+          />
+        }
+      />
+
+      <Route
+        path="*"
+        element={<NotFoundPage />}
+      />
+    </Routes>
+  );
 }
-export default App
+
+function useFokusSetelahBerpindah() {
+  const lokasi = useLocation();
+  const alamatSebelumnya = useRef(lokasi.pathname);
+
+  useEffect(() => {
+    if (alamatSebelumnya.current === lokasi.pathname) {
+      return;
+    }
+
+    alamatSebelumnya.current = lokasi.pathname;
+
+    document.getElementById('konten-utama')?.focus();
+  }, [lokasi.pathname]);
+}

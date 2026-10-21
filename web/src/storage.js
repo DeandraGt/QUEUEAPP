@@ -1,8 +1,8 @@
-export const KUNCI = 'queueapp.prototype.v1';
-/* Data yang dimuat kembali TIDAK dipercaya begitu saja. Isinya dapat
-   tertinggal dari versi lama, rusak separuh, atau diubah siapa pun lewat
-   peralatan pengembang. Kebiasaan yang sama berlaku nanti untuk data yang
-   datang dari API pada Minggu 11. */
+import { STATUS, emptyState } from './queue.js';
+
+export const KUNCI_ANTREAN = 'queueapp.antrean.v2';
+export const KUNCI_NOMOR_SAYA = 'queueapp.nomor-saya.v2';
+
 function bentuknyaBenar(data) {
   return (
     data !== null &&
@@ -13,31 +13,53 @@ function bentuknyaBenar(data) {
       (queue) =>
         Number.isInteger(queue.id) &&
         typeof queue.queueNumber === 'string' &&
-        Object.hasOwn(STATUS, queue.status)
+        Object.hasOwn(STATUS, queue.status),
     )
   );
 }
-export function muat() {
+
+export function muatAntrean() {
   try {
-    const teks = localStorage.getItem(KUNCI);
+    const teks = localStorage.getItem(KUNCI_ANTREAN);
+
     if (!teks) return emptyState();
+
     const data = JSON.parse(teks);
+
     if (!bentuknyaBenar(data)) return emptyState();
-    return {
-      lastNumber: data.lastNumber,
-      queues: data.queues,
-      myQueueId: Number.isInteger(data.myQueueId) ? data.myQueueId : null,
-    };
+
+    return data;
   } catch {
-    /* JSON rusak atau penyimpanan tidak dapat dibaca. */
     return emptyState();
   }
 }
-export function simpan(state) {
+
+export function simpanAntrean(data) {
   try {
-    localStorage.setItem(KUNCI, JSON.stringify(state));
+    localStorage.setItem(KUNCI_ANTREAN, JSON.stringify(data));
   } catch {
-    /* Dapat gagal pada mode penyamaran atau ketika penyimpanan penuh.
-       Aplikasi tetap berjalan, hanya tidak bertahan setelah dimuat ulang. */
+    // Penyimpanan mungkin tidak tersedia di peramban.
+  }
+}
+
+export function muatNomorSaya() {
+  try {
+    const teks = localStorage.getItem(KUNCI_NOMOR_SAYA);
+
+    if (!teks) return null;
+
+    const id = JSON.parse(teks);
+
+    return Number.isInteger(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+export function simpanNomorSaya(id) {
+  try {
+    localStorage.setItem(KUNCI_NOMOR_SAYA, JSON.stringify(id));
+  } catch {
+    // Nomor tetap tersedia selama state React masih aktif.
   }
 }

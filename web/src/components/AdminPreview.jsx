@@ -1,63 +1,45 @@
-
 export default function AdminPreview({
-    ringkasan,
-    dipanggil,
-    berikutnya,
-    pesan,
-    onPanggil,
+  ringkasan,
+  dipanggil,
+  berikutnya,
+  pesan = '',
+  sibuk = false,
+  onPanggil,
 }) {
-    return (
-        <>
-            <section aria-labelledby="judul-ringkasan">
-                <h2 id="judul-ringkasan">Ringkasan Hari Ini</h2>
+  return (
+    <section aria-labelledby="judul-ringkasan">
+      <h2 id="judul-ringkasan">Ringkasan Antrean</h2>
 
-                <dl>
-                    <dt>Sedang dipanggil</dt>
-                    <dd>
-                        {dipanggil ? dipanggil.queueNumber : '—'}
-                    </dd>
+      <ul>
+        <li>Menunggu: {ringkasan.waiting}</li>
+        <li>Sedang dipanggil: {ringkasan.called}</li>
+        <li>Selesai: {ringkasan.completed}</li>
+        <li>Total antrean: {ringkasan.total}</li>
+      </ul>
 
-                    <dt>Menunggu</dt>
-                    <dd>{ringkasan.waiting}</dd>
+      <p>
+        Antrean yang sedang dipanggil:{' '}
+        <strong>{dipanggil?.queueNumber ?? 'Belum ada'}</strong>
+      </p>
 
-                    <dt>Selesai</dt>
-                    <dd>{ringkasan.completed}</dd>
-                </dl>
-            </section>
+      <p>
+        Antrean berikutnya:{' '}
+        <strong>{berikutnya?.queueNumber ?? 'Tidak ada'}</strong>
+      </p>
 
-            <section aria-labelledby="judul-aksi">
-                <h2 id="judul-aksi">Aksi</h2>
+      {pesan && (
+        <p className="pesan-galat" role="alert">
+          {pesan}
+        </p>
+      )}
 
-                <form
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        onPanggil();
-                    }}
-                >
-                    {/*
-                     * Tombol dimatikan ketika tidak ada yang bisa dipanggil.
-                     * queue.js tetap menolak permintaan yang tidak valid
-                     * seandainya tombol ditekan dengan cara lain.
-                     * Pembatasan di layar bukan pengamanan.
-                     */}
-                    <button
-                        type="submit"
-                        disabled={berikutnya === null}
-                    >
-                        Panggil Antrean Berikutnya
-                    </button>
-                </form>
-
-                <p>
-                    {berikutnya
-                        ? `Antrean berikutnya yang akan dipanggil: ${berikutnya.queueNumber}.`
-                        : 'Belum ada antrean yang menunggu.'}
-                </p>
-
-                <p className="pesan-galat" role="alert">
-                    {pesan}
-                </p>
-            </section>
-        </>
-    );
+      <button
+        type="button"
+        disabled={sibuk || !berikutnya}
+        onClick={onPanggil}
+      >
+        {sibuk ? 'Memproses...' : 'Panggil Antrean Berikutnya'}
+      </button>
+    </section>
+  );
 }
