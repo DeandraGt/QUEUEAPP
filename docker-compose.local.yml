@@ -1,0 +1,17 @@
+
+services:
+  mysql:
+    profiles:
+      - disabled
+
+  server:
+    profiles:
+      - disabled
+
+  web:
+    environment:
+      DB_HOST: ${LOCAL_DB_HOST:-host.docker.internal}
+      DB_PORT: ${LOCAL_DB_PORT:-3306}
+      DB_NAME: ${LOCAL_DB_NAME:-queueapp}
+      DB_USER: ${LOCAL_DB_USER:-queueapp}
+      DB_PASSWORD: ${LOCAL_DB_PASSWORD:-change-me}
