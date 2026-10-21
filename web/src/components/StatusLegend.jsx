@@ -1,21 +1,34 @@
-/* =============================================================================
-   StatusLegend — keterangan arti setiap status
-   =============================================================================
-   Daftar definisi, karena isinya memang istilah dan penjelasannya. Penanda
-   yang sama sudah dipilih sejak Minggu 03.
-   ========================================================================== */
+const DAFTAR_STATUS = [
+  {
+    kode: 'WAITING',
+    label: 'Menunggu',
+    keterangan: 'Antrean belum dipanggil.',
+  },
+  {
+    kode: 'CALLED',
+    label: 'Sedang Dipanggil',
+    keterangan: 'Antrean sedang dilayani.',
+  },
+  {
+    kode: 'COMPLETED',
+    label: 'Selesai',
+    keterangan: 'Pelayanan antrean sudah selesai.',
+  },
+];
+
 export default function StatusLegend() {
   return (
-    <section aria-labelledby="judul-keterangan">
-      <h2 id="judul-keterangan">Keterangan Status</h2>
-      <dl>
-        <dt>WAITING</dt>
-        <dd>Menunggu dipanggil.</dd>
-        <dt>CALLED</dt>
-        <dd>Sedang dipanggil. Silakan menuju loket.</dd>
-        <dt>COMPLETED</dt>
-        <dd>Sudah selesai dilayani.</dd>
-      </dl>
+    <section aria-labelledby="judul-keterangan-status">
+      <h2 id="judul-keterangan-status">Keterangan Status Antrean</h2>
+
+      <ul className="status-legend">
+        {DAFTAR_STATUS.map((status) => (
+          <li key={status.kode}>
+            <strong>{status.label}</strong>
+            <p>{status.keterangan}</p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

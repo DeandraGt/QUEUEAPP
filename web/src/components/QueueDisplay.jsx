@@ -7,49 +7,36 @@ export default function QueueDisplay({ dipanggil, menunggu }) {
       >
         <h2 id="judul-dipanggil">Sedang Dipanggil</h2>
 
-        {/* Dua keadaan, dipilih dengan ternary. Keadaan kosong bukan
-            pengecualian yang ditambahkan belakangan — ia salah satu dari dua
-            tampilan yang sama sahnya. */}
         {dipanggil ? (
-          <>
-            <p className="nomor-antrean">
-              {dipanggil.queueNumber}
-            </p>
-
-            <p>
-              Dipanggil pada pukul{" "}
-              {formatJam(dipanggil.calledAt)}.
-            </p>
-          </>
+          <p className="nomor-antrean">
+            {dipanggil.queueNumber}
+          </p>
         ) : (
-          <>
-            <p className="nomor-antrean">—</p>
-
-            <p>Belum ada antrean yang dipanggil.</p>
-          </>
+          <p>Belum ada antrean yang dipanggil.</p>
         )}
       </section>
 
-      <section aria-labelledby="judul-menunggu">
-        <h2 id="judul-menunggu">Menunggu</h2>
+      <section
+        id="antrean-menunggu"
+        aria-labelledby="judul-menunggu"
+      >
+        <h2 id="judul-menunggu">Antrean Menunggu</h2>
 
-        {menunggu.length === 0 ? (
-          <p>Belum ada antrean yang menunggu.</p>
+        <p>
+          Jumlah antrean yang menunggu:{' '}
+          <strong>{menunggu.length}</strong>
+        </p>
+
+        {menunggu.length > 0 ? (
+          <ul>
+            {menunggu.map((antrean) => (
+              <li key={antrean.id}>
+                {antrean.queueNumber}
+              </li>
+            ))}
+          </ul>
         ) : (
-          <>
-            <p>{menunggu.length} antrean masih menunggu.</p>
-
-            {/* Key memakai ID antrean karena unik dan tidak berpindah.
-                Indeks array tidak memenuhi keduanya: menghapus satu antrean
-                menggeser indeks seluruh sisanya. */}
-            <ul className="daftar-nomor">
-              {menunggu.map((antrean) => (
-                <li key={antrean.id}>
-                  {antrean.queueNumber}
-                </li>
-              ))}
-            </ul>
-          </>
+          <p>Tidak ada antrean yang menunggu.</p>
         )}
       </section>
     </>
